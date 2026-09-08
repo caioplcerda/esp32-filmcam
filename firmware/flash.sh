@@ -7,7 +7,7 @@
 set -euo pipefail
 
 PORT="${FILMCAM_PORT:-/dev/cu.usbserial-110}"
-FQBN="esp32:esp32:esp32cam:PartitionScheme=huge_app,PSRAM=enabled"
+FQBN="esp32:esp32:esp32cam:PartitionScheme=huge_app"
 SKETCH="$(cd "$(dirname "$0")" && pwd)/filmcam"
 
 if [ ! -e "$PORT" ]; then

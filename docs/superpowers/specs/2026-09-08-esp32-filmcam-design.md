@@ -166,7 +166,7 @@ linear RGB array, so it can be tested in isolation:
 | `bloom.py` | soft highlight glow |
 | `grain.py` | luminance-weighted monochrome + chroma grain layers |
 | `optics.py` | vignette, lateral chromatic aberration, slight defocus |
-| `stocks.py` | load stock definitions from `stocks/*.toml` |
+| `stocks.py` | load stock definitions from `stock_data/*.toml` |
 | `lut.py` | optional `.cube` LUT loading, applied in place of `curves` |
 | `pipeline.py` | ordering and orchestration only — no image maths |
 | `cli.py` | argument parsing, file discovery, progress output |
@@ -196,7 +196,7 @@ linear RGB array, so it can be tested in isolation:
 
 ### 5.3 Stocks
 
-Four profiles ship as `stocks/*.toml` data, not code, so they can be tuned without
+Four profiles ship as `stock_data/*.toml` data, not code, so they can be tuned without
 touching the pipeline:
 
 | Stock | Character |
@@ -274,7 +274,7 @@ esp32-filmcam/
   filmlab/
     pyproject.toml
     src/filmlab/*.py
-    src/filmlab/stocks/*.toml
+    src/filmlab/stock_data/*.toml
     tests/
 ```
 

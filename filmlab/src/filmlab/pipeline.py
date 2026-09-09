@@ -34,6 +34,7 @@ class DevelopOptions:
     vignette: float = 1.0
     ca: float = 1.0
     defocus: float = 1.0
+    neutralize: float = 0.35
     lut: np.ndarray | None = field(default=None, compare=False)
     seed: int | None = None
 
@@ -46,7 +47,7 @@ def develop(
 ) -> np.ndarray:
     """Develop one frame. sRGB-encoded float32 in, sRGB-encoded float32 out."""
     linear = srgb_to_linear(img)
-    linear = neutralize(linear, meta)
+    linear = neutralize(linear, meta, strength=options.neutralize)
 
     if options.lut is not None:
         linear = apply_lut(linear, options.lut)

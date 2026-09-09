@@ -78,6 +78,13 @@ Every effect takes a multiplier: `--grain`, `--halation`, `--bloom`,
 `--vignette`, `--ca`, `--defocus`. `1.0` is the stock's own value. Pass
 `--lut yours.cube` to use a scanned profile instead of the built-in curves.
 
+`--neutralize` (default `0.35`) controls how hard white balance corrects the
+OV2640's frame-to-frame AWB drift: `0` applies none, `1` is full grey-world
+normalisation. It defaults to partial correction because real film has a fixed
+colour balance — a daylight stock under tungsten light is *supposed* to go
+warm, that's the look; fully neutralising every frame would erase the scene's
+own light along with the camera's drift.
+
 ## Tuning a look
 
 Stocks are data. Edit `filmlab/src/filmlab/stock_data/<id>.toml` — curves, cast,

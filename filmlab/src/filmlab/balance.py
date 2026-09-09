@@ -9,31 +9,44 @@ from __future__ import annotations
 
 import numpy as np
 
+from .colorspace import luminance
 from .io_jpeg import Metadata
 from .stocks import Stock
 
 _EPS = 1e-6
 
 
-def neutralize(img: np.ndarray, meta: Metadata) -> np.ndarray:
-    """Grey-world normalisation: scale each channel so the means match.
+def neutralize(img: np.ndarray, meta: Metadata, strength: float = 0.35) -> np.ndarray:
+    """Partial, luminance-preserving grey-world correction.
 
     `meta` is accepted so callers have one stable signature across stages; the
     firmware's AWB registers are indices rather than gains, so the channel means
     are the reliable signal.
+
+    Full grey-world normalisation (forcing the three channel means equal) corrects
+    the scene's own light along with the camera's drift — a daylight-balanced stock
+    under tungsten is *supposed* to go warm, that's the look. What actually needs
+    fixing is the OV2640's frame-to-frame AWB drift, not the light itself. `strength`
+    raises the grey-world gains to a power: 0.0 leaves the image untouched, 1.0 is
+    full grey-world, and the default of 0.35 only partially corrects the cast.
+
+    The result is rescaled to match the input's mean luminance, since ungained,
+    unequal gains would otherwise darken or brighten the frame as a side effect of
+    colour correction.
     """
     x = np.asarray(img, dtype=np.float32)
     means = x.reshape(-1, 3).mean(axis=0)
     target = float(means.mean())
     if target < _EPS:
         return x.copy()
-    gains = target / np.maximum(means, _EPS)
-    # Clip to [0, 1] after scaling. Note: clipping is not commutative with gains—
-    # if any gain exceeds 1.0 (when a channel mean is below target), scaling bright
-    # pixels can saturate highlights, and post-clip means no longer equal target.
-    # Accepting this residual cast preserves exposure; normalising all gains down
-    # to guarantee equal means would cost a stop of light on a small sensor.
-    return np.clip(x * gains.astype(np.float32), 0.0, 1.0).astype(np.float32)
+    gains = (target / np.maximum(means, _EPS)).astype(np.float32)
+    gains = gains ** np.float32(strength)
+    out = x * gains
+    before = float(luminance(x).mean())
+    after = float(luminance(out).mean())
+    if after > _EPS:
+        out = out * np.float32(before / after)
+    return np.clip(out, 0.0, 1.0).astype(np.float32)
 
 
 def apply_cast(img: np.ndarray, stock: Stock) -> np.ndarray:

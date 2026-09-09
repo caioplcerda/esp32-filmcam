@@ -38,6 +38,12 @@ def _build_parser() -> argparse.ArgumentParser:
     dev.add_argument("--vignette", type=float, default=1.0)
     dev.add_argument("--ca", type=float, default=1.0, help="chromatic aberration")
     dev.add_argument("--defocus", type=float, default=1.0)
+    dev.add_argument(
+        "--neutralize",
+        type=float,
+        default=0.35,
+        help="white-balance correction strength: 0 for none, 1 for full grey-world (default 0.35)",
+    )
     dev.add_argument("--lut", help="optional .cube LUT, used instead of the stock curves")
     dev.add_argument("--force", action="store_true", help="redevelop existing outputs")
 
@@ -88,6 +94,7 @@ def _cmd_develop(args: argparse.Namespace) -> int:
         vignette=args.vignette,
         ca=args.ca,
         defocus=args.defocus,
+        neutralize=args.neutralize,
         lut=lut,
     )
 

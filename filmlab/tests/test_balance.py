@@ -1,6 +1,8 @@
 import numpy as np
+import pytest
 
 from filmlab.balance import apply_cast, neutralize, to_monochrome
+from filmlab.colorspace import luminance
 from filmlab.io_jpeg import Metadata
 from filmlab.stocks import load_stock
 
@@ -10,7 +12,7 @@ def test_neutralize_removes_a_colour_cast():
     img[..., 0] = 0.6  # heavy red cast
     img[..., 1] = 0.4
     img[..., 2] = 0.3
-    out = neutralize(img, Metadata.default())
+    out = neutralize(img, Metadata.default(), strength=1.0)
     means = out.reshape(-1, 3).mean(axis=0)
     assert np.allclose(means, means[0], atol=1e-3)
 
@@ -65,7 +67,7 @@ def test_neutralize_does_not_fully_equalise_a_clipping_frame():
     img[0, 0] = img[0, 1] = img[1, 0] = [0.7, 0.3, 0.3]  # dark, red-cast
     img[1, 1] = [0.7, 0.95, 0.95]  # bright, weak in G/B channels
 
-    out = neutralize(img, Metadata.default())
+    out = neutralize(img, Metadata.default(), strength=1.0)
 
     # Output is finite and within valid range [0, 1]
     assert np.all(np.isfinite(out))
@@ -74,3 +76,35 @@ def test_neutralize_does_not_fully_equalise_a_clipping_frame():
     # Channel means are NOT equal due to saturation clipping of the bright pixel
     means = out.reshape(-1, 3).mean(axis=0)
     assert not np.allclose(means, means[0], atol=1e-3)
+
+
+def test_neutralize_preserves_luminance():
+    img = np.zeros((8, 8, 3), dtype=np.float32)
+    img[..., 0] = 0.6  # heavy red cast
+    img[..., 1] = 0.4
+    img[..., 2] = 0.1
+    out = neutralize(img, Metadata.default(), strength=0.35)
+    before = luminance(img).mean()
+    after = luminance(out).mean()
+    assert after == pytest.approx(before, rel=1e-3)
+
+
+def test_neutralize_strength_scales_the_correction():
+    img = np.zeros((8, 8, 3), dtype=np.float32)
+    img[..., 0] = 0.6  # heavy red cast
+    img[..., 1] = 0.4
+    img[..., 2] = 0.1
+
+    none = neutralize(img, Metadata.default(), strength=0.0)
+    assert np.allclose(none, img, atol=1e-4)
+
+    full = neutralize(img, Metadata.default(), strength=1.0)
+    full_means = full.reshape(-1, 3).mean(axis=0)
+    assert np.allclose(full_means, full_means[0], atol=1e-3)
+
+    default = neutralize(img, Metadata.default(), strength=0.35)
+    default_means = default.reshape(-1, 3).mean(axis=0)
+    default_spread = default_means.max() - default_means.min()
+    none_spread = img.reshape(-1, 3).mean(axis=0).max() - img.reshape(-1, 3).mean(axis=0).min()
+    full_spread = full_means.max() - full_means.min()
+    assert full_spread < default_spread < none_spread

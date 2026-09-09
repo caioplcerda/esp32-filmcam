@@ -52,6 +52,15 @@ def test_read_sidecar_ignores_malformed_lines(tmp_path):
     assert meta.gain == 0  # unparseable value falls back to the default
 
 
+def test_read_sidecar_empty_value_falls_back_to_default(tmp_path):
+    p = tmp_path / "f.txt"
+    p.write_text("frame=3\nframesize=\nquality=4\n")
+    meta = read_sidecar(p)
+    assert meta.framesize == "UNKNOWN"
+    assert meta.frame == 3
+    assert meta.quality == 4
+
+
 def test_write_tiff_is_16_bit(tmp_path):
     p = tmp_path / "out.tif"
     write_tiff(p, np.full((4, 4, 3), 0.5, dtype=np.float32))

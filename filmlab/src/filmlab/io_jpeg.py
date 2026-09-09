@@ -74,7 +74,8 @@ def read_sidecar(path: Path) -> Metadata:
             except ValueError:
                 continue  # keep the default for this field
         else:
-            values[key] = raw
+            if raw:
+                values[key] = raw
     return Metadata(**values)
 
 

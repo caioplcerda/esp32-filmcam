@@ -23,7 +23,9 @@ def test_every_stock_loads_with_complete_fields(stock_id):
     for points in stock.curves.values():
         assert len(points) >= 4
         xs = [x for x, _ in points]
-        assert xs == sorted(xs)
+        # PchipInterpolator requires STRICTLY increasing x; a duplicate would
+        # pass a plain sorted() check and then fail at curve-build time.
+        assert all(b > a for a, b in zip(xs, xs[1:]))
         assert xs[0] == 0.0 and xs[-1] == 1.0
     assert stock.grain["size_um"] > 0
     assert stock.grain["amplitude"] > 0

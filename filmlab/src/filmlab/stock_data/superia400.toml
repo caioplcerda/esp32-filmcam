@@ -1,0 +1,26 @@
+id = "superia400"
+name = "Fujifilm Superia X-TRA 400"
+monochrome = false
+mono_mix = [0.299, 0.587, 0.114]
+cast = [0.965, 1.030, 0.995]
+
+[curves]
+red   = [[0.0, 0.014], [0.15, 0.125], [0.40, 0.385], [0.70, 0.760], [1.0, 0.985]]
+green = [[0.0, 0.012], [0.15, 0.130], [0.40, 0.400], [0.70, 0.765], [1.0, 0.985]]
+blue  = [[0.0, 0.018], [0.15, 0.130], [0.40, 0.390], [0.70, 0.745], [1.0, 0.970]]
+
+[halation]
+strength = 0.20
+threshold = 0.76
+radius_frac = 0.011
+tint = [1.00, 0.50, 0.35]
+
+[bloom]
+strength = 0.11
+threshold = 0.84
+radius_frac = 0.030
+
+[grain]
+size_um = 32.0
+amplitude = 0.036
+chroma_amplitude = 0.014

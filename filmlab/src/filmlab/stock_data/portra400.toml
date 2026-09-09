@@ -1,0 +1,33 @@
+id = "portra400"
+name = "Kodak Portra 400"
+monochrome = false
+mono_mix = [0.299, 0.587, 0.114]
+cast = [1.030, 1.000, 0.958]
+
+[curves]
+# Control points in linear light. A lifted toe and a long shoulder is what makes
+# negative film forgiving in the highlights and soft in the shadows.
+red   = [[0.0, 0.020], [0.15, 0.150], [0.40, 0.410], [0.70, 0.740], [1.0, 0.965]]
+green = [[0.0, 0.016], [0.15, 0.145], [0.40, 0.405], [0.70, 0.735], [1.0, 0.960]]
+blue  = [[0.0, 0.022], [0.15, 0.140], [0.40, 0.395], [0.70, 0.720], [1.0, 0.950]]
+
+[halation]
+strength = 0.22
+threshold = 0.78
+radius_frac = 0.010
+tint = [1.00, 0.45, 0.28]
+
+[bloom]
+strength = 0.10
+threshold = 0.85
+radius_frac = 0.030
+
+[grain]
+size_um = 25.0
+amplitude = 0.028
+chroma_amplitude = 0.010
+
+[optics]
+vignette = 0.18
+ca = 0.35
+defocus = 0.25

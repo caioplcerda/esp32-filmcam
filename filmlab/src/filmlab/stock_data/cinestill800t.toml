@@ -1,0 +1,32 @@
+id = "cinestill800t"
+name = "Cinestill 800T"
+monochrome = false
+mono_mix = [0.299, 0.587, 0.114]
+cast = [0.930, 0.985, 1.090]
+
+[curves]
+red   = [[0.0, 0.018], [0.15, 0.140], [0.40, 0.400], [0.70, 0.745], [1.0, 0.980]]
+green = [[0.0, 0.024], [0.15, 0.140], [0.40, 0.395], [0.70, 0.725], [1.0, 0.955]]
+blue  = [[0.0, 0.050], [0.15, 0.175], [0.40, 0.420], [0.70, 0.730], [1.0, 0.945]]
+
+[halation]
+# The stock's signature: it has no anti-halation backing, so highlights bleed red.
+strength = 0.62
+threshold = 0.66
+radius_frac = 0.018
+tint = [1.00, 0.22, 0.12]
+
+[bloom]
+strength = 0.18
+threshold = 0.80
+radius_frac = 0.045
+
+[grain]
+size_um = 40.0
+amplitude = 0.045
+chroma_amplitude = 0.020
+
+[optics]
+vignette = 0.26
+ca = 0.55
+defocus = 0.30

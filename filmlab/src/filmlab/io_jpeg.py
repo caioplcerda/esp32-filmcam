@@ -46,6 +46,8 @@ def read_image(path: Path) -> np.ndarray:
     path = Path(path)
     if not path.exists():
         raise FileNotFoundError(f"no such image: {path}")
+    if path.stat().st_size == 0:
+        raise ValueError(f"{path.name} is empty (camera reset during the write)")
     with Image.open(path) as im:
         rgb = im.convert("RGB")
         arr = np.asarray(rgb, dtype=np.float32) / 255.0

@@ -71,13 +71,3 @@ def test_unknown_stock_is_a_usage_error(tmp_path):
 
 def test_missing_input_path_is_a_usage_error(tmp_path):
     assert main(["develop", str(tmp_path / "nope"), "--stock", "hp5", "--out", str(tmp_path / "o")]) == 2
-
-
-def test_contact_command_writes_a_sheet(tmp_path):
-    dcim = tmp_path / "DCIM"
-    _make_frame(dcim, 1)
-    _make_frame(dcim, 2)
-    out_dir = tmp_path / "out"
-    main(["develop", str(dcim), "--stock", "superia400", "--out", str(out_dir)])
-    assert main(["contact", str(out_dir)]) == 0
-    assert (out_dir / "contact_sheet.jpg").exists()

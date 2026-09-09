@@ -24,6 +24,13 @@ def test_read_image_rejects_missing_file(tmp_path):
         read_image(tmp_path / "nope.jpg")
 
 
+def test_read_image_rejects_empty_file(tmp_path):
+    p = tmp_path / "empty.jpg"
+    p.write_bytes(b"")
+    with pytest.raises(ValueError, match="empty"):
+        read_image(p)
+
+
 def test_read_sidecar_parses_all_fields(tmp_path):
     p = tmp_path / "f.txt"
     p.write_text(

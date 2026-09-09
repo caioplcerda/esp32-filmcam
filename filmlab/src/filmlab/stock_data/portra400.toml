@@ -24,8 +24,8 @@ radius_frac = 0.030
 
 [grain]
 size_um = 25.0
-amplitude = 0.028
-chroma_amplitude = 0.010
+amplitude = 0.017
+chroma_amplitude = 0.006
 
 [optics]
 vignette = 0.18

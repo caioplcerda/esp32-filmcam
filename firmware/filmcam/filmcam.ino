@@ -122,21 +122,43 @@ static void applyFlatProfile() {
 
 // RTC memory does not survive an external reset, so the counter is derived
 // from the card: find the highest FILM_nnnn.JPG in /DCIM and add one.
+//
+// A reset landing mid-write leaves a 0-byte FILM_nnnn.JPG behind -- the
+// capture never completed, so there is no frame there, just litter that
+// later fails development. Sweep those out while we're already scanning.
+// Deleting has to wait until the directory iteration is done: removing an
+// entry while openNextFile() is still walking it is not safe.
 static int nextFrameNumber() {
   File dir = SD_MMC.open("/DCIM");
   if (!dir || !dir.isDirectory()) return 1;
   int highest = 0;
+  static const int MAX_STALE = 32;
+  String stale[MAX_STALE];
+  int staleCount = 0;
   for (File f = dir.openNextFile(); f; f = dir.openNextFile()) {
     String name = String(f.name());
     int slash = name.lastIndexOf('/');
     if (slash >= 0) name = name.substring(slash + 1);
+    bool empty = f.size() == 0;
     if (name.startsWith("FILM_") && name.endsWith(".JPG")) {
-      int n = name.substring(5, name.length() - 4).toInt();
-      if (n > highest) highest = n;
+      if (empty) {
+        if (staleCount < MAX_STALE) stale[staleCount++] = name;
+      } else {
+        int n = name.substring(5, name.length() - 4).toInt();
+        if (n > highest) highest = n;
+      }
     }
     f.close();
   }
   dir.close();
+
+  for (int i = 0; i < staleCount; i++) {
+    String path = "/DCIM/" + stale[i];
+    if (SD_MMC.remove(path)) {
+      Serial.printf("removed empty frame %s (reset during write)\n", stale[i].c_str());
+    }
+  }
+
   return highest + 1;
 }
 

@@ -8,7 +8,6 @@ from pathlib import Path
 
 import numpy as np
 
-from .contact import contact_sheet
 from .io_jpeg import read_image, read_sidecar, write_jpeg, write_tiff
 from .lut import load_cube
 from .pipeline import DevelopOptions, develop
@@ -19,7 +18,6 @@ EXIT_FRAME_FAILED = 1
 EXIT_USAGE = 2
 
 _JPEG_SUFFIXES = {".jpg", ".jpeg", ".JPG", ".JPEG"}
-_SHEET_NAME = "contact_sheet.jpg"
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -46,12 +44,16 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     dev.add_argument("--lut", help="optional .cube LUT, used instead of the stock curves")
     dev.add_argument("--force", action="store_true", help="redevelop existing outputs")
+    dev.add_argument(
+        "--rotate",
+        type=int,
+        choices=[0, 90, 180, 270],
+        default=0,
+        help="rotate frames clockwise by this many degrees before developing "
+        "(the camera may be mounted rotated)",
+    )
 
     sub.add_parser("stocks", help="list available film stocks")
-
-    con = sub.add_parser("contact", help="render a contact sheet from developed JPEGs")
-    con.add_argument("input", help="directory of developed frames")
-    con.add_argument("--columns", type=int, default=4)
 
     return parser
 
@@ -60,6 +62,16 @@ def _frames_in(path: Path) -> list[Path]:
     if path.is_file():
         return [path]
     return sorted(p for p in path.iterdir() if p.suffix in _JPEG_SUFFIXES)
+
+
+def _rotate_image(img: np.ndarray, degrees: int) -> np.ndarray:
+    """Rotate a (H, W, 3) float32 image clockwise by `degrees` (0/90/180/270)."""
+    if degrees == 0:
+        return img
+    # np.rot90 rotates counter-clockwise, so negate k to get a clockwise turn.
+    k = -(degrees // 90) % 4
+    rotated = np.rot90(img, k)
+    return np.ascontiguousarray(rotated, dtype=np.float32)
 
 
 def _cmd_stocks() -> int:
@@ -115,6 +127,7 @@ def _cmd_develop(args: argparse.Namespace) -> int:
             continue
         try:
             img = read_image(frame_path)
+            img = _rotate_image(img, args.rotate)
             meta = read_sidecar(frame_path.with_suffix(".TXT"))
             out = develop(img, stock, meta, options)
             write_tiff(tif_out, out)
@@ -131,32 +144,11 @@ def _cmd_develop(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
-def _cmd_contact(args: argparse.Namespace) -> int:
-    source = Path(args.input)
-    if not source.is_dir():
-        print(f"error: not a directory: {source}", file=sys.stderr)
-        return EXIT_USAGE
-    frames = [p for p in _frames_in(source) if p.name != _SHEET_NAME]
-    if not frames:
-        print(f"error: no developed frames in {source}", file=sys.stderr)
-        return EXIT_USAGE
-
-    images = [read_image(p) for p in frames]
-    labels = [p.stem.replace("FILM_", "") for p in frames]
-    sheet = contact_sheet(images, labels, columns=args.columns)
-    out_path = source / _SHEET_NAME
-    write_jpeg(out_path, sheet)
-    print(f"ok    {out_path}")
-    return EXIT_OK
-
-
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     if args.command == "stocks":
         return _cmd_stocks()
-    if args.command == "develop":
-        return _cmd_develop(args)
-    return _cmd_contact(args)
+    return _cmd_develop(args)
 
 
 if __name__ == "__main__":

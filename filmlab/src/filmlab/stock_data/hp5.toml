@@ -22,7 +22,7 @@ radius_frac = 0.032
 
 [grain]
 size_um = 45.0
-amplitude = 0.055
+amplitude = 0.034
 chroma_amplitude = 0.0
 
 [optics]

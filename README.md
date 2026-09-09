@@ -60,7 +60,6 @@ cd filmlab
 .venv/bin/filmlab stocks
 .venv/bin/filmlab develop /Volumes/<CARD>/DCIM --stock portra400 --out ~/Pictures/FilmCam
 .venv/bin/filmlab develop ~/Pictures/raw/FILM_0007.JPG --stock cinestill800t --grain 1.3 --halation 1.5 --out ~/Pictures/FilmCam
-.venv/bin/filmlab contact ~/Pictures/FilmCam
 ```
 
 Each frame produces a 16-bit TIFF master and a quality-95 JPEG. Already-developed
@@ -78,6 +77,9 @@ frames are skipped unless you pass `--force`.
 Every effect takes a multiplier: `--grain`, `--halation`, `--bloom`,
 `--vignette`, `--ca`, `--defocus`. `1.0` is the stock's own value. Pass
 `--lut yours.cube` to use a scanned profile instead of the built-in curves.
+
+`--rotate {0,90,180,270}` rotates each frame clockwise before developing —
+it exists because the camera may be mounted rotated in its housing.
 
 `--neutralize` (default `0.35`) controls how hard white balance corrects the
 OV2640's frame-to-frame AWB drift: `0` applies none, `1` is full grey-world

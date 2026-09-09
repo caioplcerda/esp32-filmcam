@@ -3,7 +3,9 @@ name = "Kodak Portra 400"
 monochrome = false
 mono_mix = [0.299, 0.587, 0.114]
 cast = [1.030, 1.000, 0.958]
-saturation = 1.18
+# Tuned to the camera owner's preference for vivid browns and yellows, not to
+# real Portra's restraint. Do not 'correct' it back down without asking them.
+saturation = 1.32
 
 [curves]
 # Control points in linear light. A lifted toe and a long shoulder is what makes

@@ -34,6 +34,14 @@ static const int STATUS_LED_PIN = 33;  // onboard red LED, active LOW
 // total shutter lag near 2.4s rather than the ~3.2s that 20 frames at 100ms
 // would cost.
 static const int SETTLE_FRAMES = 18;
+// Auto-exposure bias, -2..+2. The meter averages the whole frame, so a subject
+// against a bright background (a face under a lit ceiling, someone in front of a
+// window) gets metered dark. A small positive bias favours the subject.
+// This is a genuine trade, not a free win: it also pushes bright scenes further
+// into clipping, and sky frames already clip 20-46% of highlights. Raise or lower
+// it here after testing on the board.
+static const int AE_LEVEL = 1;
+
 static const int JPEG_QUALITY = 4;     // esp32-camera scale is inverted (0-63), so lower is better.
                                        // 0 is nominally best but HANGS the encoder at UXGA on this
                                        // board - capture never completes. 4 is the lowest value
@@ -125,6 +133,7 @@ static void applyFlatProfile() {
   s->set_awb_gain(s, 1);
   s->set_wb_mode(s, 4);
   s->set_exposure_ctrl(s, 1);
+  s->set_ae_level(s, AE_LEVEL);
   s->set_gain_ctrl(s, 1);
   s->set_lenc(s, 1);
   s->set_bpc(s, 1);

@@ -15,3 +15,4 @@ real board. Run this list after any change to `filmcam.ino`.
 
 If test 1 fails to upload with "Failed to connect": hold BOOT, tap RST, release
 BOOT, re-run `flash.sh`.
+| 8 | Shoot a backlit subject (a face under a lit ceiling, or against a window) | Subject renders brighter than with `AE_LEVEL = 0`; a bright sky in frame may clip more — that is the documented trade |

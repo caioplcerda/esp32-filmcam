@@ -26,8 +26,11 @@ radius_frac = 0.038
 
 [grain]
 size_um = 48.0
-amplitude = 0.038
-chroma_amplitude = 0.016
+# Measured as a clear outlier against the other stocks on real frames, reading as
+# noise rather than character. Intensity reduced; size_um deliberately left at 48
+# so the grain stays physically coarse like a fast film.
+amplitude = 0.028
+chroma_amplitude = 0.012
 
 [optics]
 vignette = 0.28

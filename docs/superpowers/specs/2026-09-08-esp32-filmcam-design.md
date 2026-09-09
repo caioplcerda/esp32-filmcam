@@ -123,14 +123,19 @@ frame=1
 millis=812
 exposure=<AEC value>
 gain=<AGC value>
-awb_r=<red gain>
-awb_b=<blue gain>
+awb_r=<white-balance mode index>
+awb_b=<AWB-gain enabled flag>
 framesize=UXGA
 quality=4
 ```
 
 The film lab reads `gain` to scale grain (a high-gain frame was shot in low light and
 earns coarser grain, exactly as a pushed film would).
+
+The `awb_r` and `awb_b` fields are the OV2640's white-balance mode index and AWB-gain
+flag, not per-channel gains — the sensor does not expose usable gains over SCCB. They are
+recorded for diagnostics only; `filmlab` never consumes them, and `balance.neutralize`
+derives its correction from the frame's own channel means instead.
 
 ### 4.5 Status codes
 

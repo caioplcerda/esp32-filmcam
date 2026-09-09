@@ -34,7 +34,7 @@ static const int STATUS_LED_PIN = 33;  // onboard red LED, active LOW
 // total shutter lag near 2.4s rather than the ~3.2s that 20 frames at 100ms
 // would cost.
 static const int SETTLE_FRAMES = 18;
-static const int JPEG_QUALITY = 4;     // lower is better on the OV2640
+static const int JPEG_QUALITY = 0;     // esp32-camera scale is inverted (0-63); 0 is maximum quality, at the cost of larger files
 
 // Blink codes reported before sleeping.
 enum StatusCode {

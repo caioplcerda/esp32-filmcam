@@ -86,7 +86,7 @@ Location: `firmware/filmcam/filmcam.ino`. Built with `arduino-cli` against the
 2. Mount SD with `SD_MMC.begin("/sdcard", true)` — **1-bit mode**. This frees
    `GPIO4`, `GPIO12`, `GPIO13` and keeps the flash LED on `GPIO4` usable.
 3. `esp_camera_init()` with the AI-Thinker pin map, `FRAMESIZE_UXGA` (1600x1200),
-   `jpeg_quality = 4`, `fb_count = 2`, `CAMERA_FB_IN_PSRAM`, `PIXFORMAT_JPEG`.
+   `jpeg_quality = 0`, `fb_count = 2`, `CAMERA_FB_IN_PSRAM`, `PIXFORMAT_JPEG`.
 4. Apply the flat capture profile (§4.2).
 5. Discard the first 18 frames so auto-exposure and auto-white-balance converge.
    Measured on the real board, the OV2640's AEC register climbs to a plateau
@@ -129,7 +129,7 @@ gain=<AGC value>
 awb_r=<white-balance mode index>
 awb_b=<AWB-gain enabled flag>
 framesize=UXGA
-quality=4
+quality=0
 ```
 
 `exposure` and `gain` are read directly from the OV2640's SENSOR-bank registers

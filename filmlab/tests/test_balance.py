@@ -92,8 +92,8 @@ def test_neutralize_preserves_luminance():
 def test_apply_camera_gains_neutralises_the_measured_cast():
     img = np.zeros((8, 8, 3), dtype=np.float32)
     img[..., 1] = 0.5  # green
-    img[..., 0] = 0.5 * 1.090  # measured R/G on the white wall
-    img[..., 2] = 0.5 * 1.173  # measured B/G on the white wall
+    img[..., 0] = 0.5 * 0.851  # measured R/G on daylight neutrals
+    img[..., 2] = 0.5 * 1.098  # measured B/G on daylight neutrals
 
     out = apply_camera_gains(img)
     means = out.reshape(-1, 3).mean(axis=0)
@@ -105,14 +105,26 @@ def test_apply_camera_gains_neutralises_the_measured_cast():
 
 def test_apply_camera_gains_preserves_luminance():
     img = np.zeros((8, 8, 3), dtype=np.float32)
-    img[..., 0] = 0.5 * 1.090
+    img[..., 0] = 0.5 * 0.851
     img[..., 1] = 0.5
-    img[..., 2] = 0.5 * 1.173
+    img[..., 2] = 0.5 * 1.098
 
     out = apply_camera_gains(img)
     before = luminance(img).mean()
     after = luminance(out).mean()
     assert after == pytest.approx(before, rel=1e-3)
+
+
+def test_apply_camera_gains_warms_rather_than_cools():
+    """Regression guard: the daylight recalibration must boost red over blue.
+
+    The old indoor-derived gains multiplied red by ~0.917, removing warmth from
+    daylight scenes that needed it. This would have failed under that value.
+    """
+    img = np.full((8, 8, 3), 0.5, dtype=np.float32)
+    out = apply_camera_gains(img)
+    means = out.reshape(-1, 3).mean(axis=0)
+    assert means[0] > means[2]  # red > blue
 
 
 def test_apply_camera_gains_does_not_mutate_input():

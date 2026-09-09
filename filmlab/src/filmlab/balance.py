@@ -51,13 +51,26 @@ def neutralize(img: np.ndarray, meta: Metadata, strength: float = 0.15) -> np.nd
     return np.clip(out, 0.0, 1.0).astype(np.float32)
 
 
-# Measured on this camera by photographing a white wall under the fixed WB
-# preset the firmware selects: the wall read R/G 1.090, B/G 1.173, so these
-# gains bring it to neutral. This corrects the SENSOR, not the scene — it runs
-# before any film emulation, and it is deliberately a constant rather than a
-# per-frame estimate, because real film has a fixed balance and scenes lit by
-# different light are supposed to shift.
-CAMERA_GAINS = (1.0 / 1.090, 1.0, 1.0 / 1.173)
+# Measured from the owner's own daylight frames, under the firmware's fixed WB
+# preset: in each frame, pixels that are bright but unclipped (mean brightness
+# 0.40-0.97) and low-saturation (HSV saturation below 0.28) — road markings,
+# concrete, and similar physically neutral surfaces lit by sun — were sampled
+# and averaged to get the sensor's response to a neutral under daylight. Three
+# independent frames agreed closely: R/G 0.850/0.845/0.859, B/G 1.105/1.090/1.099
+# (mean R/G 0.851, B/G 1.098), so these gains bring that to neutral.
+#
+# An earlier version of this constant was derived from a white wall shot under
+# INDOOR light and wrongly applied here; that pulled red out of exactly the
+# scenes that needed it. A colour calibration is only valid for the illuminant
+# it was measured under, so this one is deliberately tied to daylight — real
+# film carries a fixed balance, and most photographs are daylit. The direct
+# consequence is that tungsten-lit interiors will render warm under this
+# constant; that's what daylight-balanced film does, and is intended, not a
+# defect. This corrects the SENSOR, not the scene — it runs before any film
+# emulation, and it is deliberately a constant rather than a per-frame
+# estimate, because real film has a fixed balance and scenes lit by different
+# light are supposed to shift.
+CAMERA_GAINS = (1.0 / 0.851, 1.0, 1.0 / 1.098)
 
 
 def apply_camera_gains(

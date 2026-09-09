@@ -47,3 +47,30 @@ def test_balance_does_not_mutate_input():
     apply_cast(img, load_stock("portra400"))
     to_monochrome(img, load_stock("hp5"))
     assert np.array_equal(img, original)
+
+
+def test_neutralize_does_not_fully_equalise_a_clipping_frame():
+    """Pins a known limitation: clipping after normalisation leaves residual cast.
+
+    On strongly-cast bright frames, grey-world normalisation may require gains > 1.0
+    to match the target mean. When scaling saturates highlights, clipping becomes
+    non-commutative: post-clip channel means no longer equal the target. We accept
+    this residual cast to preserve exposure (normalising all gains down to guarantee
+    equal means would darken the frame by ~1 stop, a poor trade on a small sensor).
+    See neutralize() docstring and comments for the full reasoning.
+    """
+    # Strongly-cast image with a bright highlight that will saturate when its
+    # weak channels are scaled up. Three dark pixels (red-cast) and one bright.
+    img = np.zeros((2, 2, 3), dtype=np.float32)
+    img[0, 0] = img[0, 1] = img[1, 0] = [0.7, 0.3, 0.3]  # dark, red-cast
+    img[1, 1] = [0.7, 0.95, 0.95]  # bright, weak in G/B channels
+
+    out = neutralize(img, Metadata.default())
+
+    # Output is finite and within valid range [0, 1]
+    assert np.all(np.isfinite(out))
+    assert np.all((out >= 0.0) & (out <= 1.0))
+
+    # Channel means are NOT equal due to saturation clipping of the bright pixel
+    means = out.reshape(-1, 3).mean(axis=0)
+    assert not np.allclose(means, means[0], atol=1e-3)

@@ -28,6 +28,11 @@ def neutralize(img: np.ndarray, meta: Metadata) -> np.ndarray:
     if target < _EPS:
         return x.copy()
     gains = target / np.maximum(means, _EPS)
+    # Clip to [0, 1] after scaling. Note: clipping is not commutative with gains—
+    # if any gain exceeds 1.0 (when a channel mean is below target), scaling bright
+    # pixels can saturate highlights, and post-clip means no longer equal target.
+    # Accepting this residual cast preserves exposure; normalising all gains down
+    # to guarantee equal means would cost a stop of light on a small sensor.
     return np.clip(x * gains.astype(np.float32), 0.0, 1.0).astype(np.float32)
 
 

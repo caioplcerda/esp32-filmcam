@@ -75,8 +75,13 @@ frames are skipped unless you pass `--force`.
 | `superia400` | Green-cyan cast, punchy consumer-film contrast |
 
 Every effect takes a multiplier: `--grain`, `--halation`, `--bloom`,
-`--vignette`, `--ca`, `--defocus`. `1.0` is the stock's own value. Pass
-`--lut yours.cube` to use a scanned profile instead of the built-in curves.
+`--saturation`, `--vignette`, `--ca`, `--defocus`. `1.0` is the stock's own
+value. Pass `--lut yours.cube` to use a scanned profile instead of the
+built-in curves.
+
+The camera shoots deliberately flat (`set_saturation(s, -1)` in firmware,
+leaving headroom for the lab); `--saturation` scales how much of that colour
+intensity each stock restores, on top of its own value in `stock_data/*.toml`.
 
 `--rotate {0,90,180,270}` rotates each frame clockwise before developing —
 it exists because the camera may be mounted rotated in its housing.

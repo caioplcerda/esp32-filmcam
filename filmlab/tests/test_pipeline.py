@@ -60,3 +60,11 @@ def test_all_effects_disabled_still_returns_a_valid_image():
     opts = DevelopOptions(grain=0.0, halation=0.0, bloom=0.0, vignette=0.0, ca=0.0, defocus=0.0)
     out = develop(_scene(), load_stock("portra400"), Metadata.default(), opts)
     assert out.min() >= 0.0 and out.max() <= 1.0
+
+
+def test_zero_saturation_visibly_differs_from_default():
+    img = _scene()
+    stock = load_stock("portra400")
+    default_out = develop(img, stock, Metadata.default())
+    desaturated_out = develop(img, stock, Metadata.default(), DevelopOptions(saturation=0.0))
+    assert not np.allclose(default_out, desaturated_out, atol=1e-3)

@@ -3,6 +3,7 @@ name = "Ilford HP5 Plus 400"
 monochrome = true
 mono_mix = [0.290, 0.590, 0.120]
 cast = [1.000, 1.000, 1.000]
+saturation = 1.0
 
 [curves]
 red   = [[0.0, 0.010], [0.15, 0.105], [0.40, 0.375], [0.70, 0.780], [1.0, 0.995]]

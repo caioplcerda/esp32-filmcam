@@ -3,6 +3,7 @@ name = "Kodak Portra 400"
 monochrome = false
 mono_mix = [0.299, 0.587, 0.114]
 cast = [1.030, 1.000, 0.958]
+saturation = 1.18
 
 [curves]
 # Control points in linear light. A lifted toe and a long shoulder is what makes

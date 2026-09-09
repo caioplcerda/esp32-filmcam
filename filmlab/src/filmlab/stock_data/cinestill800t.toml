@@ -3,6 +3,7 @@ name = "Cinestill 800T"
 monochrome = false
 mono_mix = [0.299, 0.587, 0.114]
 cast = [0.930, 0.985, 1.090]
+saturation = 1.25
 
 [curves]
 red   = [[0.0, 0.018], [0.15, 0.140], [0.40, 0.400], [0.70, 0.745], [1.0, 0.980]]

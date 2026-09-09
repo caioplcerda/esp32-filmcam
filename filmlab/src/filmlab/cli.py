@@ -33,6 +33,7 @@ def _build_parser() -> argparse.ArgumentParser:
     dev.add_argument("--grain", type=float, default=1.0)
     dev.add_argument("--halation", type=float, default=1.0)
     dev.add_argument("--bloom", type=float, default=1.0)
+    dev.add_argument("--saturation", type=float, default=1.0)
     dev.add_argument("--vignette", type=float, default=1.0)
     dev.add_argument("--ca", type=float, default=1.0, help="chromatic aberration")
     dev.add_argument("--defocus", type=float, default=1.0)
@@ -108,6 +109,7 @@ def _cmd_develop(args: argparse.Namespace) -> int:
         grain=args.grain,
         halation=args.halation,
         bloom=args.bloom,
+        saturation=args.saturation,
         vignette=args.vignette,
         ca=args.ca,
         defocus=args.defocus,

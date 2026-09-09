@@ -2,6 +2,9 @@
 
 Order matters:
   * curves run before halation so highlight effects feed on film-shaped highlights
+  * saturation runs after curves (or the LUT) and before monochrome conversion,
+    so it acts on the film's developed colour response, not the raw sensor's,
+    and a B&W stock's channel mix sees consistent input
   * grain runs after the tonal work so it is not squashed by a curve
   * optics run last, since they are properties of the lens, not the emulsion
 """
@@ -21,6 +24,7 @@ from .halation import apply_halation
 from .io_jpeg import Metadata
 from .lut import apply_lut
 from .optics import apply_optics
+from .saturation import apply_saturation
 from .stocks import Stock
 
 
@@ -31,6 +35,7 @@ class DevelopOptions:
     grain: float = 1.0
     halation: float = 1.0
     bloom: float = 1.0
+    saturation: float = 1.0
     vignette: float = 1.0
     ca: float = 1.0
     defocus: float = 1.0
@@ -57,6 +62,8 @@ def develop(
     else:
         linear = apply_cast(linear, stock)
         linear = apply_curves(linear, stock)
+
+    linear = apply_saturation(linear, stock, strength=options.saturation)
 
     if stock.monochrome:
         linear = to_monochrome(linear, stock)

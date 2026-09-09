@@ -44,3 +44,8 @@ def test_hp5_is_monochrome_and_others_are_not():
 def test_cinestill_has_the_strongest_halation():
     strengths = {s: load_stock(s).halation["strength"] for s in EXPECTED}
     assert max(strengths, key=strengths.get) == "cinestill800t"
+
+
+@pytest.mark.parametrize("stock_id", sorted(EXPECTED))
+def test_every_stock_has_positive_saturation(stock_id):
+    assert load_stock(stock_id).saturation > 0

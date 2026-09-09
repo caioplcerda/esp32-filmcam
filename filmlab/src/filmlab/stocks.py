@@ -22,6 +22,7 @@ class Stock:
     monochrome: bool
     mono_mix: tuple[float, float, float]
     cast: tuple[float, float, float]
+    saturation: float
     curves: dict[str, list[tuple[float, float]]]
     halation: dict
     bloom: dict
@@ -56,6 +57,7 @@ def load_stock(stock_id: str) -> Stock:
         monochrome=bool(raw.get("monochrome", False)),
         mono_mix=tuple(float(v) for v in raw.get("mono_mix", (0.299, 0.587, 0.114))),
         cast=tuple(float(v) for v in raw.get("cast", (1.0, 1.0, 1.0))),
+        saturation=float(raw.get("saturation", 1.0)),
         curves=curves,
         halation=dict(raw["halation"]),
         bloom={**_DEFAULT_BLOOM, **raw.get("bloom", {})},

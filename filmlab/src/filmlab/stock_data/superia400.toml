@@ -3,6 +3,7 @@ name = "Fujifilm Superia X-TRA 400"
 monochrome = false
 mono_mix = [0.299, 0.587, 0.114]
 cast = [0.965, 1.030, 0.995]
+saturation = 1.42
 
 [curves]
 red   = [[0.0, 0.014], [0.15, 0.125], [0.40, 0.385], [0.70, 0.760], [1.0, 0.985]]

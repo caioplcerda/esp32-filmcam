@@ -34,6 +34,7 @@ python3 -m venv .venv
 ```
 
 Override the port with `FILMCAM_PORT=/dev/cu.usbserial-XXX ./firmware/flash.sh`.
+Override the upload baud rate with `FILMCAM_BAUD=115200 ./firmware/flash.sh` (default is 115200; use a higher rate like 460800 only if your adapter supports it).
 If it reports "Failed to connect": hold BOOT, tap RST, release BOOT, re-run.
 
 ## Shooting

@@ -88,8 +88,11 @@ Location: `firmware/filmcam/filmcam.ino`. Built with `arduino-cli` against the
 3. `esp_camera_init()` with the AI-Thinker pin map, `FRAMESIZE_UXGA` (1600x1200),
    `jpeg_quality = 4`, `fb_count = 2`, `CAMERA_FB_IN_PSRAM`, `PIXFORMAT_JPEG`.
 4. Apply the flat capture profile (§4.2).
-5. Discard the first 5 frames so auto-exposure and auto-white-balance converge.
-6. Capture frame 6. This is the photograph.
+5. Discard the first 18 frames so auto-exposure and auto-white-balance converge.
+   Measured on the real board, the OV2640's AEC register climbs to a plateau
+   (~1092) only after 16-20 settle frames at 80 ms each; fewer frames (e.g. 5)
+   leave AEC near the bottom of that curve and every photograph underexposed.
+6. Capture frame 19. This is the photograph.
 7. Determine the frame number (§4.3), write the JPEG and its sidecar, `f.flush()`
    and `f.close()` before doing anything else.
 8. `esp_deep_sleep_start()`.
@@ -128,6 +131,11 @@ awb_b=<AWB-gain enabled flag>
 framesize=UXGA
 quality=4
 ```
+
+`exposure` and `gain` are read directly from the OV2640's SENSOR-bank registers
+(AEC across three registers, AGC from a fourth), not from `sensor_t::status` —
+that struct's `aec_value`/`agc_gain` fields are driver-side caches that are
+never refreshed from the sensor and read as fixed constants on every frame.
 
 The film lab reads `gain` to scale grain (a high-gain frame was shot in low light and
 earns coarser grain, exactly as a pushed film would).

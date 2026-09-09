@@ -11,7 +11,8 @@ captures one 1600x1200 JPEG, writes it plus a metadata sidecar to the card, and
 goes back to deep sleep. There is no preview and no app — that is the point.
 
 `GPIO0` on this board is the camera's clock line, so the BOOT button cannot be
-read as a shutter. RST can, and costs nothing but about a second of lag.
+read as a shutter. RST can, and costs roughly 2.4 s of lag while auto-exposure
+settles.
 
 ## Setup
 

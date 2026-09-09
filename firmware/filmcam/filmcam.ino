@@ -28,7 +28,12 @@
 #define PCLK_GPIO_NUM 22
 
 static const int STATUS_LED_PIN = 33;  // onboard red LED, active LOW
-static const int SETTLE_FRAMES = 5;    // discarded so AEC/AWB converge
+// Discarded so AEC/AWB converge. Measured on-board: the OV2640's AEC register
+// climbs from ~624 at 2 settle frames to a ~1092 plateau by 16-20 frames (see
+// firmware/TESTING.md). 18 frames at 80ms lands on that plateau while keeping
+// total shutter lag near 2.4s rather than the ~3.2s that 20 frames at 100ms
+// would cost.
+static const int SETTLE_FRAMES = 18;
 static const int JPEG_QUALITY = 4;     // lower is better on the OV2640
 
 // Blink codes reported before sleeping.
@@ -135,14 +140,31 @@ static int nextFrameNumber() {
   return highest + 1;
 }
 
+// The OV2640's real AEC value is split across three registers in the SENSOR
+// bank. sensor_t::status holds driver-side cached values that are never
+// refreshed, so reading the registers is the only way to record what the
+// sensor actually did.
+static uint16_t readAec(sensor_t *s) {
+  s->set_reg(s, 0xFF, 0xFF, 0x01);           // select SENSOR bank
+  uint16_t hi = s->get_reg(s, 0x45, 0x3F);   // AEC[15:10]
+  uint16_t mid = s->get_reg(s, 0x10, 0xFF);  // AEC[9:2]
+  uint16_t lo = s->get_reg(s, 0x04, 0x03);   // AEC[1:0]
+  return (hi << 10) | (mid << 2) | lo;
+}
+
+static uint8_t readGain(sensor_t *s) {
+  s->set_reg(s, 0xFF, 0xFF, 0x01);
+  return (uint8_t)s->get_reg(s, 0x00, 0xFF);
+}
+
 static bool writeSidecar(const char *path, int frame, uint32_t elapsedMs) {
   sensor_t *s = esp_camera_sensor_get();
   File f = SD_MMC.open(path, FILE_WRITE);
   if (!f) return false;
   f.printf("frame=%d\n", frame);
   f.printf("millis=%lu\n", (unsigned long)elapsedMs);
-  f.printf("exposure=%d\n", s ? s->status.aec_value : 0);
-  f.printf("gain=%d\n", s ? s->status.agc_gain : 0);
+  f.printf("exposure=%d\n", s ? readAec(s) : 0);
+  f.printf("gain=%d\n", s ? readGain(s) : 0);
   f.printf("awb_r=%d\n", s ? s->status.wb_mode : 0);
   f.printf("awb_b=%d\n", s ? s->status.awb_gain : 0);
   f.printf("framesize=UXGA\n");
@@ -180,7 +202,7 @@ void setup() {
   for (int i = 0; i < SETTLE_FRAMES; i++) {
     camera_fb_t *warm = esp_camera_fb_get();
     if (warm) esp_camera_fb_return(warm);
-    delay(60);
+    delay(80);
   }
 
   camera_fb_t *fb = esp_camera_fb_get();

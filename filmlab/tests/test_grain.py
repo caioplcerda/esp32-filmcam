@@ -80,3 +80,32 @@ def test_output_in_range_and_input_untouched():
     out = apply_grain(img, stock, Metadata.default(), strength=4.0, seed=5)
     assert out.min() >= 0.0 and out.max() <= 1.0
     assert np.array_equal(img, original)
+
+
+def _lag1_correlation(width, stock_id, seed=1):
+    """Horizontal lag-1 autocorrelation of the extracted grain, red channel.
+
+    Blurred grain is spatially correlated; independent per-pixel noise is not.
+    This is what distinguishes real grain-size behaviour from white noise.
+    """
+    img = np.full((64, width, 3), 0.5, dtype=np.float32)
+    out = apply_grain(img, load_stock(stock_id), Metadata.default(), seed=seed)
+    noise = (out - img)[..., 0]
+    a, b = noise[:, :-1].ravel(), noise[:, 1:].ravel()
+    a, b = a - a.mean(), b - b.mean()
+    return float((a * b).mean() / (a.std() * b.std()))
+
+
+def test_grain_is_spatially_correlated_at_real_frame_width():
+    # sigma = size_um * width / 36000 * 0.5, and the blur is skipped below 0.35.
+    # At 96px Portra gives sigma 0.033 (no blur, corr ~0.00); at 1600px it gives
+    # 0.556 (blurred, corr ~0.36). This pins the resolution-correct grain-size
+    # mechanism, which no other test reaches.
+    assert abs(_lag1_correlation(96, "portra400")) < 0.05
+    assert _lag1_correlation(1600, "portra400") > 0.25
+
+
+def test_coarser_stock_has_larger_grain_at_the_same_width():
+    # HP5's 45um against Portra's 25um at the same frame width: coarser grain
+    # means a wider blur and so stronger spatial correlation (~0.77 vs ~0.36).
+    assert _lag1_correlation(1600, "hp5") > _lag1_correlation(1600, "portra400")

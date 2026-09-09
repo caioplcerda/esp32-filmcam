@@ -73,6 +73,8 @@ frames are skipped unless you pass `--force`.
 | `cinestill800t` | Tungsten, cyan shadows, heavy red halation |
 | `hp5` | High-contrast black and white, pronounced grain |
 | `superia400` | Green-cyan cast, punchy consumer-film contrast |
+| `gold200` | Golden consumer warmth, gentle reds, fine grain |
+| `natura1600` | Fast and warm, coarse grain, strong halation — built for night |
 
 Every effect takes a multiplier: `--grain`, `--halation`, `--bloom`,
 `--saturation`, `--vignette`, `--ca`, `--defocus`. `1.0` is the stock's own

@@ -2,10 +2,17 @@ import pytest
 
 from filmlab.stocks import Stock, available_stocks, load_stock
 
-EXPECTED = {"portra400", "cinestill800t", "hp5", "superia400"}
+EXPECTED = {
+    "portra400",
+    "cinestill800t",
+    "hp5",
+    "superia400",
+    "gold200",
+    "natura1600",
+}
 
 
-def test_all_four_stocks_are_available():
+def test_all_stocks_are_available():
     assert set(available_stocks()) == EXPECTED
 
 
@@ -49,3 +56,16 @@ def test_cinestill_has_the_strongest_halation():
 @pytest.mark.parametrize("stock_id", sorted(EXPECTED))
 def test_every_stock_has_positive_saturation(stock_id):
     assert load_stock(stock_id).saturation > 0
+
+
+@pytest.mark.parametrize("stock_id", ["gold200", "natura1600"])
+def test_warm_stocks_lean_red_over_blue(stock_id):
+    cast = load_stock(stock_id).cast
+    assert cast[0] > cast[2]
+
+
+def test_natura1600_has_coarser_grain_than_portra400():
+    portra = load_stock("portra400").grain
+    natura = load_stock("natura1600").grain
+    assert natura["size_um"] > portra["size_um"]
+    assert natura["amplitude"] > portra["amplitude"]

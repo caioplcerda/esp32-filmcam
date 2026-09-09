@@ -15,10 +15,17 @@ def _make_frame(directory, index):
     )
 
 
-def test_stocks_command_lists_all_four(capsys):
+def test_stocks_command_lists_all_stocks(capsys):
     assert main(["stocks"]) == 0
     out = capsys.readouterr().out
-    for stock_id in ("portra400", "cinestill800t", "hp5", "superia400"):
+    for stock_id in (
+        "portra400",
+        "cinestill800t",
+        "hp5",
+        "superia400",
+        "gold200",
+        "natura1600",
+    ):
         assert stock_id in out
 
 

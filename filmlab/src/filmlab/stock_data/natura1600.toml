@@ -1,0 +1,35 @@
+id = "natura1600"
+name = "Fujifilm Natura 1600"
+monochrome = false
+mono_mix = [0.299, 0.587, 0.114]
+cast = [1.040, 1.000, 0.960]
+saturation = 1.22
+
+[curves]
+# Fast-film character: flatter contrast, a longer highlight shoulder so point
+# lights don't clip, and a strongly lifted toe so night shadows stay readable.
+red   = [[0.0, 0.045], [0.15, 0.195], [0.40, 0.440], [0.70, 0.720], [1.0, 0.945]]
+green = [[0.0, 0.038], [0.15, 0.185], [0.40, 0.425], [0.70, 0.705], [1.0, 0.935]]
+blue  = [[0.0, 0.040], [0.15, 0.175], [0.40, 0.405], [0.70, 0.685], [1.0, 0.915]]
+
+[halation]
+# Point lights at night are exactly where this shows.
+strength = 0.40
+threshold = 0.70
+radius_frac = 0.016
+tint = [1.00, 0.42, 0.22]
+
+[bloom]
+strength = 0.15
+threshold = 0.82
+radius_frac = 0.038
+
+[grain]
+size_um = 48.0
+amplitude = 0.038
+chroma_amplitude = 0.016
+
+[optics]
+vignette = 0.28
+ca = 0.40
+defocus = 0.28

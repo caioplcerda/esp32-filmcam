@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pytest
 
@@ -42,3 +44,12 @@ def test_luminance_weights_green_most():
     green = luminance(np.array([[[0.0, 1.0, 0.0]]], dtype=np.float32))
     blue = luminance(np.array([[[0.0, 0.0, 1.0]]], dtype=np.float32))
     assert green > red > blue
+
+
+def test_out_of_range_input_is_clamped_without_warnings():
+    img = np.array([[[-0.5, 0.0, 1.0], [1.5, 0.5, -2.0]]], dtype=np.float32)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")  # any RuntimeWarning becomes a failure
+        out = srgb_to_linear(img)
+    assert np.all(np.isfinite(out))
+    assert out.min() >= 0.0 and out.max() <= 1.0

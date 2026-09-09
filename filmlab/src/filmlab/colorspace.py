@@ -13,7 +13,7 @@ _LUMA = np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
 
 def srgb_to_linear(img: np.ndarray) -> np.ndarray:
     """Undo the sRGB transfer function. Input and output are float32 in [0, 1]."""
-    x = np.asarray(img, dtype=np.float32)
+    x = np.clip(np.asarray(img, dtype=np.float32), 0.0, 1.0)
     return np.where(x <= 0.04045, x / 12.92, ((x + 0.055) / 1.055) ** 2.4).astype(
         np.float32
     )

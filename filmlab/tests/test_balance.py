@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from filmlab.balance import apply_cast, neutralize, to_monochrome
+from filmlab.balance import apply_camera_gains, apply_cast, neutralize, to_monochrome
 from filmlab.colorspace import luminance
 from filmlab.io_jpeg import Metadata
 from filmlab.stocks import load_stock
@@ -87,6 +87,46 @@ def test_neutralize_preserves_luminance():
     before = luminance(img).mean()
     after = luminance(out).mean()
     assert after == pytest.approx(before, rel=1e-3)
+
+
+def test_apply_camera_gains_neutralises_the_measured_cast():
+    img = np.zeros((8, 8, 3), dtype=np.float32)
+    img[..., 1] = 0.5  # green
+    img[..., 0] = 0.5 * 1.090  # measured R/G on the white wall
+    img[..., 2] = 0.5 * 1.173  # measured B/G on the white wall
+
+    out = apply_camera_gains(img)
+    means = out.reshape(-1, 3).mean(axis=0)
+    r_over_g = means[0] / means[1]
+    b_over_g = means[2] / means[1]
+    assert r_over_g == pytest.approx(1.0, abs=1e-3)
+    assert b_over_g == pytest.approx(1.0, abs=1e-3)
+
+
+def test_apply_camera_gains_preserves_luminance():
+    img = np.zeros((8, 8, 3), dtype=np.float32)
+    img[..., 0] = 0.5 * 1.090
+    img[..., 1] = 0.5
+    img[..., 2] = 0.5 * 1.173
+
+    out = apply_camera_gains(img)
+    before = luminance(img).mean()
+    after = luminance(out).mean()
+    assert after == pytest.approx(before, rel=1e-3)
+
+
+def test_apply_camera_gains_does_not_mutate_input():
+    img = np.full((4, 4, 3), 0.4, dtype=np.float32)
+    original = img.copy()
+    apply_camera_gains(img)
+    assert np.array_equal(img, original)
+
+
+def test_apply_camera_gains_of_one_is_a_no_op():
+    img = np.full((4, 4, 3), 0.4, dtype=np.float32)
+    img[..., 0] = 0.6
+    out = apply_camera_gains(img, gains=(1.0, 1.0, 1.0))
+    assert np.allclose(out, img, atol=1e-5)
 
 
 def test_neutralize_strength_scales_the_correction():

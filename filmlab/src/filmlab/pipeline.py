@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from .balance import apply_cast, neutralize, to_monochrome
+from .balance import CAMERA_GAINS, apply_camera_gains, apply_cast, neutralize, to_monochrome
 from .bloom import apply_bloom
 from .colorspace import linear_to_srgb, srgb_to_linear
 from .curves import apply_curves
@@ -34,7 +34,8 @@ class DevelopOptions:
     vignette: float = 1.0
     ca: float = 1.0
     defocus: float = 1.0
-    neutralize: float = 0.35
+    neutralize: float = 0.15
+    camera_gains: tuple[float, float, float] | None = CAMERA_GAINS
     lut: np.ndarray | None = field(default=None, compare=False)
     seed: int | None = None
 
@@ -47,6 +48,8 @@ def develop(
 ) -> np.ndarray:
     """Develop one frame. sRGB-encoded float32 in, sRGB-encoded float32 out."""
     linear = srgb_to_linear(img)
+    if options.camera_gains is not None:
+        linear = apply_camera_gains(linear, options.camera_gains)
     linear = neutralize(linear, meta, strength=options.neutralize)
 
     if options.lut is not None:

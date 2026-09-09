@@ -111,8 +111,15 @@ static void applyFlatProfile() {
   s->set_sharpness(s, -2);
   s->set_denoise(s, 0);
   s->set_gainceiling(s, GAINCEILING_4X);
+  // Real film has a FIXED colour balance -- that is what gives a stock its
+  // identity. The OV2640's auto white balance drifts frame to frame (measured
+  // R/G 0.91-1.29, B/G 0.66-1.15 across similar scenes), which is both
+  // un-film-like and impossible to correct afterwards. Preset 4 measured
+  // closest to neutral on a white wall, and the residual is corrected in
+  // filmlab with the camera calibration gains.
   s->set_whitebal(s, 1);
   s->set_awb_gain(s, 1);
+  s->set_wb_mode(s, 4);
   s->set_exposure_ctrl(s, 1);
   s->set_gain_ctrl(s, 1);
   s->set_lenc(s, 1);

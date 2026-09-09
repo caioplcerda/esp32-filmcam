@@ -81,9 +81,15 @@ Every effect takes a multiplier: `--grain`, `--halation`, `--bloom`,
 `--rotate {0,90,180,270}` rotates each frame clockwise before developing —
 it exists because the camera may be mounted rotated in its housing.
 
-`--neutralize` (default `0.35`) controls how hard white balance corrects the
-OV2640's frame-to-frame AWB drift: `0` applies none, `1` is full grey-world
-normalisation. It defaults to partial correction because real film has a fixed
+The firmware pins the OV2640 to a fixed white-balance preset (rather than
+leaving it automatic — see `applyFlatProfile()`), and filmlab applies a fixed
+per-camera calibration (`--no-camera-gains` disables it) that corrects that
+preset's measured residual cast before anything else runs. `--neutralize`
+(default `0.15`) then applies a light residual per-frame correction on top:
+`0` applies none, `1` is full grey-world normalisation. The default is low
+because the sensor is now calibrated at the source, so per-frame correction
+should mostly be lifting small remaining drift, not doing the whole job.
+It stays a partial correction rather than `1.0` because real film has a fixed
 colour balance — a daylight stock under tungsten light is *supposed* to go
 warm, that's the look; fully neutralising every frame would erase the scene's
 own light along with the camera's drift.

@@ -39,8 +39,13 @@ def _build_parser() -> argparse.ArgumentParser:
     dev.add_argument(
         "--neutralize",
         type=float,
-        default=0.35,
-        help="white-balance correction strength: 0 for none, 1 for full grey-world (default 0.35)",
+        default=0.15,
+        help="white-balance correction strength: 0 for none, 1 for full grey-world (default 0.15)",
+    )
+    dev.add_argument(
+        "--no-camera-gains",
+        action="store_true",
+        help="disable the fixed per-camera colour calibration applied before white balance",
     )
     dev.add_argument("--lut", help="optional .cube LUT, used instead of the stock curves")
     dev.add_argument("--force", action="store_true", help="redevelop existing outputs")
@@ -107,6 +112,7 @@ def _cmd_develop(args: argparse.Namespace) -> int:
         ca=args.ca,
         defocus=args.defocus,
         neutralize=args.neutralize,
+        camera_gains=None if args.no_camera_gains else DevelopOptions().camera_gains,
         lut=lut,
     )
 

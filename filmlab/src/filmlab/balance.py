@@ -16,7 +16,7 @@ from .stocks import Stock
 _EPS = 1e-6
 
 
-def neutralize(img: np.ndarray, meta: Metadata, strength: float = 0.35) -> np.ndarray:
+def neutralize(img: np.ndarray, meta: Metadata, strength: float = 0.15) -> np.ndarray:
     """Partial, luminance-preserving grey-world correction.
 
     `meta` is accepted so callers have one stable signature across stages; the
@@ -28,7 +28,9 @@ def neutralize(img: np.ndarray, meta: Metadata, strength: float = 0.35) -> np.nd
     under tungsten is *supposed* to go warm, that's the look. What actually needs
     fixing is the OV2640's frame-to-frame AWB drift, not the light itself. `strength`
     raises the grey-world gains to a power: 0.0 leaves the image untouched, 1.0 is
-    full grey-world, and the default of 0.35 only partially corrects the cast.
+    full grey-world, and the default of 0.15 only lightly corrects the residual cast
+    left after the sensor's fixed white-balance preset and camera calibration gains
+    (see `apply_camera_gains`) have already done most of the work.
 
     The result is rescaled to match the input's mean luminance, since ungained,
     unequal gains would otherwise darken or brighten the frame as a side effect of
@@ -42,6 +44,29 @@ def neutralize(img: np.ndarray, meta: Metadata, strength: float = 0.35) -> np.nd
     gains = (target / np.maximum(means, _EPS)).astype(np.float32)
     gains = gains ** np.float32(strength)
     out = x * gains
+    before = float(luminance(x).mean())
+    after = float(luminance(out).mean())
+    if after > _EPS:
+        out = out * np.float32(before / after)
+    return np.clip(out, 0.0, 1.0).astype(np.float32)
+
+
+# Measured on this camera by photographing a white wall under the fixed WB
+# preset the firmware selects: the wall read R/G 1.090, B/G 1.173, so these
+# gains bring it to neutral. This corrects the SENSOR, not the scene — it runs
+# before any film emulation, and it is deliberately a constant rather than a
+# per-frame estimate, because real film has a fixed balance and scenes lit by
+# different light are supposed to shift.
+CAMERA_GAINS = (1.0 / 1.090, 1.0, 1.0 / 1.173)
+
+
+def apply_camera_gains(
+    img: np.ndarray, gains: tuple[float, float, float] = CAMERA_GAINS
+) -> np.ndarray:
+    """Correct the sensor's fixed colour bias. Luminance-preserving."""
+    x = np.asarray(img, dtype=np.float32)
+    gain_arr = np.array(gains, dtype=np.float32)
+    out = x * gain_arr
     before = float(luminance(x).mean())
     after = float(luminance(out).mean())
     if after > _EPS:

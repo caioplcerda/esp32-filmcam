@@ -48,6 +48,14 @@ def test_develop_is_deterministic_for_a_fixed_seed():
     assert np.array_equal(a, b)
 
 
+def test_camera_gains_none_differs_from_default():
+    img = _scene()
+    stock = load_stock("portra400")
+    default_out = develop(img, stock, Metadata.default())
+    no_gains_out = develop(img, stock, Metadata.default(), DevelopOptions(camera_gains=None))
+    assert not np.allclose(default_out, no_gains_out, atol=1e-4)
+
+
 def test_all_effects_disabled_still_returns_a_valid_image():
     opts = DevelopOptions(grain=0.0, halation=0.0, bloom=0.0, vignette=0.0, ca=0.0, defocus=0.0)
     out = develop(_scene(), load_stock("portra400"), Metadata.default(), opts)

@@ -148,7 +148,15 @@ static void applyFlatProfile() {
 // later fails development. Sweep those out while we're already scanning.
 // Deleting has to wait until the directory iteration is done: removing an
 // entry while openNextFile() is still walking it is not safe.
-static int nextFrameNumber() {
+// Scanning /DCIM to find the highest frame number costs O(files) on every shot,
+// and the card only ever grows: at ~126 files it was adding well over a second
+// to a ~4 s shutter. The next number is cached in a one-line file instead, so the
+// common path is a single small read. The scan remains as the fallback for a
+// fresh card, a deleted cache, or a cache that has gone stale — and it is also
+// where empty frames left by a reset mid-write get cleaned up.
+static const char *COUNTER_PATH = "/DCIM/NEXT.TXT";
+
+static int scanForNextFrame() {
   File dir = SD_MMC.open("/DCIM");
   if (!dir || !dir.isDirectory()) return 1;
   int highest = 0;
@@ -178,8 +186,35 @@ static int nextFrameNumber() {
       Serial.printf("removed empty frame %s (reset during write)\n", stale[i].c_str());
     }
   }
-
   return highest + 1;
+}
+
+static void writeCounter(int next) {
+  File f = SD_MMC.open(COUNTER_PATH, FILE_WRITE);
+  if (!f) return;
+  f.printf("%d\n", next);
+  f.flush();
+  f.close();
+}
+
+static int nextFrameNumber() {
+  int candidate = 0;
+  File f = SD_MMC.open(COUNTER_PATH, FILE_READ);
+  if (f) {
+    candidate = f.readStringUntil('\n').toInt();
+    f.close();
+  }
+
+  // Trust the cache only if it does not point at a frame that already exists.
+  // A stale cache (card swapped, photos deleted and re-added) would otherwise
+  // overwrite a photograph, which is the one failure this must never allow.
+  if (candidate > 0) {
+    char path[32];
+    snprintf(path, sizeof(path), "/DCIM/FILM_%04d.JPG", candidate);
+    if (!SD_MMC.exists(path)) return candidate;
+    Serial.println("filmcam: frame counter was stale, rescanning");
+  }
+  return scanForNextFrame();
 }
 
 // The OV2640's real AEC value is split across three registers in the SENSOR
@@ -278,6 +313,7 @@ void setup() {
     sleepNow(STATUS_WRITE_FAIL);
   }
 
+  writeCounter(frame + 1);
   Serial.printf("filmcam: wrote %s (%u bytes)\n", jpgPath, (unsigned)written);
   sleepNow(STATUS_OK);
 }
